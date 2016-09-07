@@ -4,6 +4,7 @@ namespace app\controllers;
 
 use app\models\News;
 use app\models\Users;
+use Faker\Provider\DateTime;
 use Yii;
 use yii\filters\AccessControl;
 use yii\web\Controller;
@@ -143,16 +144,21 @@ class SiteController extends Controller
         $model = new UploadForm();
         $news = new News();
         
-        if (Yii::$app->request->isPost && $news->load(Yii::$app->request->post()) ){
+        if (Yii::$app->request->post()){
             $model->imageFile = UploadedFile::getInstance($model, 'imageFile');
             $model->imageFile->saveAs('/var/www/html/Yii/web/image/' . $model->imageFile->baseName . '.' . $model->imageFile->extension);
+            $request = Yii::$app->request;
+            $news->news_name = $_POST['News']['news_name'];
+            $news->short_description = $_POST['News']['short_description'];
+            $news->full_text = $_POST['News']['full_text'];
             $news->image = $model->imageFile->baseName . '.' . $model->imageFile->extension;
+            $news->views = 0;
             $news->save();
             return $this->redirect('', 302);
         }
 
 
 
-        return $this->render('upload', ['model' => $model, $news]);
+        return $this->render('upload', ['news' => $news, 'model' => $model]);
     }
 }
