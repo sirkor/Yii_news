@@ -6,6 +6,7 @@ use app\models\News;
 use app\models\Users;
 use Faker\Provider\DateTime;
 use Yii;
+use yii\data\Pagination;
 use yii\filters\AccessControl;
 use yii\web\Controller;
 use yii\filters\VerbFilter;
@@ -69,7 +70,22 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
-        return $this->render('index');
+        $query = News::find();
+
+        $pagination = new Pagination([
+            'defaultPageSize' => 5,
+            'totalCount' => $query->count(),
+        ]);
+
+        $all_news = $query->orderBy('add_date')
+            ->offset($pagination->offset)
+            ->limit($pagination->limit)
+            ->all();
+
+        return $this->render('index', [
+            'all_news' => $all_news,
+            'pagination' => $pagination,
+        ]);
     }
 
     /**
@@ -153,6 +169,7 @@ class SiteController extends Controller
             $news->full_text = $_POST['News']['full_text'];
             $news->image = $model->imageFile->baseName . '.' . $model->imageFile->extension;
             $news->views = 0;
+            $news->add_date = date("Y-m-d H:i:s");
             $news->save();
             return $this->redirect('', 302);
         }
